@@ -14,14 +14,14 @@ export function activate(context: vscode.ExtensionContext) {
 		// emitter and its event
 		onDidChangeEmitter = new vscode.EventEmitter<vscode.Uri>();
 		onDidChange = this.onDidChangeEmitter.event;
-		
+
 		provideTextDocumentContent(uri: vscode.Uri): string {
 			let certificate = Certificate.fromPEM(new Buffer(decodeURIComponent(uri.path))).toJSON();
 			let document = {
 				SerialNumber: certificate.serialNumber,
 				Subject: certificate.subject,
 				Issuer: certificate.issuer
-			}
+			};
 			return JSON.stringify(document, null, 4);
 		}
 	};
