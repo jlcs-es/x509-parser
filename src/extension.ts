@@ -2,7 +2,7 @@
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
 import { ViewColumn } from 'vscode';
-import { Certificate } from '@fidm/x509';
+import * as openssl from 'openssl-commander';
 
 
 // this method is called when your extension is activated
@@ -16,13 +16,12 @@ export function activate(context: vscode.ExtensionContext) {
 		onDidChange = this.onDidChangeEmitter.event;
 
 		provideTextDocumentContent(uri: vscode.Uri): string {
-			let certificate = Certificate.fromPEM(new Buffer(decodeURIComponent(uri.path))).toJSON();
-			let document = {
-				SerialNumber: certificate.serialNumber,
-				Subject: certificate.subject,
-				Issuer: certificate.issuer
-			};
-			return JSON.stringify(document, null, 4);
+			let result = openssl.stdin(decodeURIComponent(uri.path)).cmd("x509 -text").exec();
+			if(result.status !== 0) {
+				return result.stderr;
+			} else {
+				return result.stdout;
+			}
 		}
 	};
 	context.subscriptions.push(vscode.workspace.registerTextDocumentContentProvider("x509PEM", x509PEMProvider));
@@ -36,7 +35,7 @@ export function activate(context: vscode.ExtensionContext) {
 		let uri = vscode.Uri.parse('x509PEM:' + document.getText());
 		try{
 			let doc = await vscode.workspace.openTextDocument(uri); // calls back into the provider
-			doc = await vscode.workspace.openTextDocument({language: 'json', content: doc.getText()});
+			doc = await vscode.workspace.openTextDocument({language: 'text', content: doc.getText()});
 			await vscode.window.showTextDocument(doc, { preview: false, viewColumn: ViewColumn.Beside });
 		} catch(e) {
 			return;
