@@ -2,20 +2,24 @@
 
 Simple x509 certificates parser to manage in a human readable way your project certificates.
 
-## Features
+Use `Ctrl+Shift+P` with:
 
-Currently supports x509 certificates.
+- `Parse x509 certificate`
+- `Parse CSR`
 
-Use `Ctrl+Shift+P` with `Parse x509 PEM` to open a side tab with your certificate parsed by OpenSSL.
+---
 
 ## Known Issues
 
-
+None
 
 ## Release Notes
 
+### 0.0.2
 
-### 1.0.0
+Added CSR parsing.
+
+### 0.0.1
 
 First release. So much work to do...
 
