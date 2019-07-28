@@ -43,12 +43,12 @@
 	},
 	"devDependencies": {
 		"@types/mocha": "^2.2.42",
-		"@types/node": "^8.10.25",
-		"tslint": "^5.8.0",
-		"typescript": "^3.3.1",
-		"vscode": "^1.1.28"
+		"@types/node": "^8.10.51",
+		"tslint": "^5.18.0",
+		"typescript": "^3.5.3",
+		"vscode": "^1.1.35"
 	},
 	"dependencies": {
-		"openssl-commander": "^0.1.4"
+		"openssl-commander": "^0.1.5"
 	}
 }
