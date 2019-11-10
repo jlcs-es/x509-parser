@@ -3,6 +3,8 @@
 import * as vscode from 'vscode';
 import { ViewColumn } from 'vscode';
 import * as openssl from 'openssl-commander';
+import { file } from 'tmp-promise';
+const fs = require('fs').promises;
 
 
 // this method is called when your extension is activated
@@ -13,21 +15,7 @@ export function activate(context: vscode.ExtensionContext) {
 	////// x509 Parser //////////////
 	/////////////////////////////////
 	context.subscriptions.push(vscode.commands.registerCommand('extension.parseX509', async () => {
-		let editor = vscode.window.activeTextEditor;
-		if (!editor) {
-			return;
-		}
-		let result = openssl.stdin(editor.document.getText()).cmd("x509 -text").exec();
-		let output = result.stdout;
-		if(result.status !== 0) {
-			output = result.stderr;
-		}
-		try{
-			let doc = await vscode.workspace.openTextDocument({language: 'text', content: output});
-			await vscode.window.showTextDocument(doc, { preview: false, viewColumn: ViewColumn.Beside });
-		} catch(e) {
-			return;
-		}
+		await runAndShowOpenSSLCmd("x509 -text");
 	}));
 	/////////////////////////////////
 	/////////////////////////////////
@@ -36,21 +24,24 @@ export function activate(context: vscode.ExtensionContext) {
 	//////// CSR Parser /////////////
 	/////////////////////////////////
 	context.subscriptions.push(vscode.commands.registerCommand('extension.parseCSR', async () => {
-		let editor = vscode.window.activeTextEditor;
-		if (!editor) {
-			return;
-		}
-		let result = openssl.stdin(editor.document.getText()).cmd("req -text").exec();
-		let output = result.stdout;
-		if(result.status !== 0) {
-			output = result.stderr;
-		}
-		try{
-			let doc = await vscode.workspace.openTextDocument({language: 'text', content: output});
-			await vscode.window.showTextDocument(doc, { preview: false, viewColumn: ViewColumn.Beside });
-		} catch(e) {
-			return;
-		}
+		await runAndShowOpenSSLCmd("req -text");
+	}));
+	/////////////////////////////////
+	/////////////////////////////////
+
+
+	/////////////////////////////////
+	/////// EC Key Parser ///////////
+	/////////////////////////////////
+	context.subscriptions.push(vscode.commands.registerCommand('extension.parseECkey', async () => {
+		let password = await vscode.window.showInputBox({
+			prompt: "Password for EC Private Key [ leave empty if none ]",
+			password: true
+		});
+		if(!password)
+			await runAndShowOpenSSLCmd("ec -text");
+		else
+			await runAndShowOpenSSLCmd(`ec -text -passin pass:${password}`);
 	}));
 	/////////////////////////////////
 	/////////////////////////////////
@@ -58,3 +49,30 @@ export function activate(context: vscode.ExtensionContext) {
 
 // this method is called when your extension is deactivated
 export function deactivate() { }
+
+
+async function runAndShowOpenSSLCmd(command: string) {
+	let editor = vscode.window.activeTextEditor;
+	if (!editor) {
+		return;
+	}
+	let result = openssl.stdin(editor.document.getText()).cmd(command).exec();
+	let output = result.stdout;
+	if(result.status !== 0) {
+		output = result.stderr;
+	}
+	try{
+		let tmpfile = await file({
+			keep: true,
+			prefix: `${command.split(" ")[0]}-`,
+			postfix: ".openssl"
+		});
+		await fs.writeFile(tmpfile.path, output);
+		let doc = await vscode.workspace.openTextDocument(tmpfile.path);
+		await vscode.window.showTextDocument(doc, { preview: false, viewColumn: ViewColumn.Beside });
+	} catch(e) {
+		vscode.window.showErrorMessage(e);
+		return;
+	}
+}
+

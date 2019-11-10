@@ -31,6 +31,10 @@
 			{
 				"command": "extension.parseCSR",
 				"title": "Parse CSR"
+			},
+			{
+				"command": "extension.parseECkey",
+				"title": "Parse EC Private Key"
 			}
 		]
 	},
@@ -43,12 +47,14 @@
 	},
 	"devDependencies": {
 		"@types/mocha": "^2.2.42",
-		"@types/node": "^8.10.51",
-		"tslint": "^5.18.0",
-		"typescript": "^3.5.3",
-		"vscode": "^1.1.35"
+		"@types/node": "^8.10.59",
+		"@types/tmp": "^0.1.0",
+		"tslint": "^5.20.1",
+		"typescript": "^3.7.2",
+		"vscode": "^1.1.36"
 	},
 	"dependencies": {
-		"openssl-commander": "^0.1.5"
+		"openssl-commander": "^0.1.5",
+		"tmp-promise": "^2.0.2"
 	}
 }
