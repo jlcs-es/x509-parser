@@ -1,8 +1,8 @@
 {
 	"name": "x509-parser",
 	"displayName": "x509 parser",
-	"description": "Parse x509 certificates to human readable text",
-	"version": "0.0.3",
+	"description": "Parse OpenSSL artifacts to human readable text",
+	"version": "0.0.4",
 	"publisher": "jlcs-es",
 	"repository": {
 		"type": "git",
