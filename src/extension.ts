@@ -57,11 +57,11 @@ async function runAndShowOpenSSLCmd(command: string) {
 		return;
 	}
 	let pem = editor.document.getText();
-        // Check if the required PEM header and footer exist, if not assume the document contains a certificate
-        if (!pem.startsWith('-----') && !pem.endsWith('-----')){
-            pem = '-----BEGIN CERTIFICATE-----\n' + pem + '-----END CERTIFICATE-----';
-        }
-        let result = openssl.stdin(pem).cmd(command).exec();
+	// Check if the required PEM header and footer exist, if not assume the document contains a certificate
+	if (!pem.startsWith('-----') && !pem.endsWith('-----')){
+		pem = '-----BEGIN CERTIFICATE-----\n' + pem + '\n-----END CERTIFICATE-----';
+	}
+	let result = openssl.stdin(pem).cmd(command).exec();
 	let output = result.stdout;
 	if(result.status !== 0) {
 		output = result.stderr;
