@@ -16,6 +16,11 @@ None
 
 ## Release Notes
 
+### 0.0.6
+
+- Update dependencies
+- Change preview behaviour: use _TextDocumentContentProvider_ instead of temporal files
+
 ### 0.0.5
 
 - Assume the editor contains a PEM encoded certificate when file does not contain a proper header and footer. Thanks to @bcarroll
