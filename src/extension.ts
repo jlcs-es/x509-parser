@@ -3,9 +3,7 @@
 import * as vscode from 'vscode';
 import { ViewColumn } from 'vscode';
 import * as openssl from 'openssl-commander';
-import { file } from 'tmp-promise';
-const fs = require('fs').promises;
-
+import { createHash } from 'crypto';
 
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
@@ -45,6 +43,14 @@ export function activate(context: vscode.ExtensionContext) {
 	}));
 	/////////////////////////////////
 	/////////////////////////////////
+
+	/////////////////////////////////
+	/////// OpenSSL Viewer //////////
+	/////////////////////////////////
+	context.subscriptions.push(vscode.workspace.registerTextDocumentContentProvider('x509-parser', new OpenSSLOutputTextDocumentContentProvider()));
+	/////////////////////////////////
+	/////////////////////////////////
+
 }
 
 // this method is called when your extension is deactivated
@@ -71,14 +77,13 @@ async function runAndShowOpenSSLCmd(command: string) {
 	if(result.status !== 0) {
 		output = result.stderr;
 	}
+
+	const ranname = createHash('md5').update(output).digest("hex").substring(0, 6);
+	const previewUri = vscode.Uri.parse(`x509-parser://viewer/OpenSSL%20Output%20${ranname}`);
+	previewContents.set(previewUri.path, output);
+
 	try{
-		let tmpfile = await file({
-			keep: true,
-			prefix: `${command.split(" ")[0]}-`,
-			postfix: ".openssl"
-		});
-		await fs.writeFile(tmpfile.path, output);
-		let doc = await vscode.workspace.openTextDocument(tmpfile.path);
+		let doc = await vscode.workspace.openTextDocument(previewUri);
 		await vscode.window.showTextDocument(doc, { preview: false, viewColumn: ViewColumn.Beside });
 	} catch(e) {
 		vscode.window.showErrorMessage(e);
@@ -86,3 +91,21 @@ async function runAndShowOpenSSLCmd(command: string) {
 	}
 }
 
+const previewContents = new Map();
+
+export class OpenSSLOutputTextDocumentContentProvider implements vscode.TextDocumentContentProvider {
+	private _onDidChange = new vscode.EventEmitter<vscode.Uri>();
+
+	public provideTextDocumentContent(uri: vscode.Uri): string {
+		const content = previewContents.get(uri.path);
+		return content;		
+	}
+
+	get onDidChange(): vscode.Event<vscode.Uri> {
+		return this._onDidChange.event;
+	}
+
+	public update(uri: vscode.Uri) {
+		this._onDidChange.fire(uri);
+	}
+}
